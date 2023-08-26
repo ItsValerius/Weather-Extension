@@ -55,80 +55,60 @@ const Forecast = ({
     return <span>Error: {error.message}</span>
   }
 
-  const aggregatedTemperatures: {
-    date: string
-    temperatures: number[]
-    averageTemperature: number
-    items: WeatherEntity[]
-    mostCommonIcon: string
-  }[] = data.weather.reduce((result, item) => {
-    const date = moment(item.timestamp)
-    const dayKey = date.format("YYYY-MM-DD")
-
-    let existingEntry = result.find((entry) => entry.date === dayKey)
-
-    if (!existingEntry) {
-      existingEntry = {
-        date: dayKey,
-        temperatures: [],
-        averageTemperature: 0,
-        items: [],
-        mostCommonIcon: ""
-      }
-      result.push(existingEntry)
-    }
-
-    existingEntry.temperatures.push(item.temperature)
-    existingEntry.items.push(item)
-    return result
-  }, [])
-
-  // Calculate average temperatures for each day
-  aggregatedTemperatures.forEach((data) => {
-    const temperatures = data.temperatures
-    const averageTemperature =
-      temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length
-    data.averageTemperature = averageTemperature
-  })
-
-  // Find the most common icon for each day
-  for (const dayKey in aggregatedTemperatures) {
-    const iconCounts: Record<string, number> = {}
-
-    aggregatedTemperatures[dayKey].items.forEach((item) => {
-      if (iconCounts[item.icon]) {
-        iconCounts[item.icon]++
-      } else {
-        iconCounts[item.icon] = 1
-      }
-    })
-
-    let mostCommonIcon = ""
-    let maxCount = 0
-    for (const icon in iconCounts) {
-      if (iconCounts[icon] > maxCount) {
-        mostCommonIcon = icon
-        maxCount = iconCounts[icon]
-      }
-    }
-    aggregatedTemperatures[dayKey].mostCommonIcon = mostCommonIcon
-    console.log(
-      `On ${dayKey}, the most common icon is: ${mostCommonIcon}, occurring ${maxCount} times.`
+  const uniqueDatesAsArray = [
+    ...new Set(
+      data.weather.map((date) => new Date(date.timestamp).toDateString())
     )
-  }
+  ].map((string) => new Date(string))
 
-  return aggregatedTemperatures.map((aggr) => {
+  const avgTempByDay = uniqueDatesAsArray.map((uniqueDate, index) => {
+    const groupedByDay = data.weather.filter((item) =>
+      moment(item.timestamp).isSame(uniqueDate, "day")
+    )
+    let compare = ""
+    let mostFreq = ""
+    const average = groupedByDay.reduce(
+      (acc, curr) => acc + curr.temperature,
+      0
+    )
+    console.log(groupedByDay)
+
+    groupedByDay.reduce((acc, val) => {
+      if (val.icon in acc) {
+        // if key already exists
+        acc[val.icon]++ // then increment it by 1
+      } else {
+        acc[val.icon] = 1 // or else create a key with value 1
+      }
+      if (acc[val.icon] > compare) {
+        // if value of that key is greater
+        // than the compare value.
+        compare = acc[val.icon] // than make it a new compare value.
+        mostFreq = val.icon // also make that key most frequent.
+      }
+      return acc
+    }, {})
+
+    return {
+      avgTemp: Math.round(((average / groupedByDay.length) * 10) / 10).toFixed(
+        1
+      ),
+      mostFrequentIcon: mostFreq,
+      date: moment(groupedByDay.at(0).timestamp).format("YYYY-MM-DD")
+    }
+  })
+  console.log(avgTempByDay)
+
+  return avgTempByDay.map((day) => {
     return (
       <div
-        className="flex w-full flex-row justify-around items-center"
-        key={aggr.date}>
-        <div className="flex justify-center items-center">
-          <Icon icon={aggr.mostCommonIcon} size={32} />
-          {aggr.date}{" "}
+        className="flex w-full flex-row gap-2 items-center justify-center border-b"
+        key={day.date}>
+        <div className="flex  items-center gap-1">
+          <Icon icon={day.mostFrequentIcon} size={24} />
+          {moment(day.date).format("dddd")}
         </div>
-        <p className="text-lg ">
-          {(Math.round(aggr.averageTemperature * 10) / 10).toFixed(1) + "°C"}
-        </p>
+        <p className="text-lg h-8">{day.avgTemp + "°C"}</p>
       </div>
     )
   })

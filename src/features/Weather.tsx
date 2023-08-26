@@ -13,7 +13,7 @@ const Weather = () => {
       userDecisionTimeout: 5000
     })
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full ">
       <Now
         coords={coords}
         isGeolocationAvailable={isGeolocationAvailable}

@@ -18,7 +18,7 @@ const queryClient = new QueryClient()
 function IndexPopup() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex items-center justify-center h-fit w-40 flex-col">
+      <div className="flex items-center justify-center aspect-square w-44 flex-col bg-slate-100">
         <Weather />
       </div>
     </QueryClientProvider>
