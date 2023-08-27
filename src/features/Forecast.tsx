@@ -102,13 +102,13 @@ const Forecast = ({
   return avgTempByDay.map((day) => {
     return (
       <div
-        className="flex w-full flex-row gap-2 items-center justify-center border-b"
+        className="grid grid-cols-3 px-2  w-full gap-2 place-items-center  border-b"
         key={day.date}>
-        <div className="flex  items-center gap-1">
-          <Icon icon={day.mostFrequentIcon} size={24} />
-          {moment(day.date).format("dddd")}
-        </div>
-        <p className="text-lg h-8">{day.avgTemp + "°C"}</p>
+        <Icon icon={day.mostFrequentIcon} size={24} />
+        <p className="w-full place-self-center text-start">
+          {moment(day.date).format("ddd")}
+        </p>
+        <p className="  text-lg h-8">{day.avgTemp + "°C"}</p>
       </div>
     )
   })
